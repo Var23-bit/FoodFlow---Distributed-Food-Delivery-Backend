@@ -1,0 +1,24 @@
+{
+  "name": "foodflow",
+  "version": "1.0.0",
+  "description": "Distributed food delivery backend with microservices architecture",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "services/*"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "docker-compose up --build",
+    "test": "jest --coverage",
+    "test:integration": "jest --testPathPattern=integration",
+    "seed": "node scripts/seed.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
