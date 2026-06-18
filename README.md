@@ -47,44 +47,6 @@ A production-grade, scalable food delivery backend inspired by Swiggy and Zomato
 | Delivery Service | 3005 | Delivery assignment, status updates |
 | Notification Service | 3006 | In-app + mock email notifications |
 
-## Quick Start
-
-### Prerequisites
-
-- Docker & Docker Compose
-- Node.js 18+ (for local development)
-
-### Run with Docker
-
-```bash
-git clone <repo-url>
-cd foodflow
-docker-compose up --build
-```
-
-Services will be available at:
-- **API Gateway**: http://localhost:3000
-- **Swagger Docs**: http://localhost:3000/api-docs
-- **WebSocket**: ws://localhost:3000
-
-### Seed Test Data
-
-```bash
-npm install
-node scripts/seed.js
-```
-
-### Test Accounts
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@foodflow.com | Admin@123 |
-| Customer | customer@foodflow.com | Customer@123 |
-| Restaurant Owner | owner@foodflow.com | Owner@123 |
-| Delivery Partner | partner@foodflow.com | Partner@123 |
-
-## API Endpoints
-
 ### Authentication
 ```
 POST   /api/auth/register
@@ -153,19 +115,6 @@ GET    /api/admin/analytics
 PATCH  /api/admin/users/:id/role
 ```
 
-## WebSocket Events
-
-Connect with JWT token:
-```javascript
-const socket = io('http://localhost:3000', {
-  auth: { token: 'your-jwt-token' }
-});
-
-socket.emit('subscribe_order', orderId);
-socket.on('order_status_updated', (data) => console.log(data));
-socket.on('delivery_location_updated', (data) => console.log(data));
-socket.on('delivery_assigned', (data) => console.log(data));
-```
 
 ## Kafka Event Flow
 
@@ -181,12 +130,6 @@ Order Created → Restaurant Notified → Order Confirmed → Delivery Assigned
 - **Session**: Refresh token storage
 - **Cart**: User shopping cart data
 
-## Running Tests
-
-```bash
-npm install
-npm test
-```
 
 ## Project Structure
 
@@ -194,7 +137,7 @@ npm test
 foodflow/
 ├── docker-compose.yml
 ├── database/init.sql
-├── shared/                  # Shared libraries
+├── shared/                  
 │   ├── constants.js
 │   ├── database.js
 │   ├── redis.js
@@ -211,7 +154,3 @@ foodflow/
 ├── scripts/seed.js
 └── tests/
 ```
-
-## License
-
-MIT
