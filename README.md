@@ -33,7 +33,7 @@ A production-grade, scalable food delivery backend inspired by Swiggy and Zomato
 | Auth | JWT + Refresh Tokens |
 | Real-time | Socket.IO |
 | Container | Docker + Docker Compose |
-| Docs | Swagger/OpenAPI |
+| Docs | Swagger |
 
 ## Services
 
