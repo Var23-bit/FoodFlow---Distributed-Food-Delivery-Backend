@@ -31,7 +31,7 @@ async function publishEvent(topic, message, config = {}) {
   await prod.send({
     topic,
     messages: [{
-      key: message.id || message.orderId || message.userId || String(Date.now()),
+      key: message.id || message.orderId || message.order_id || message.userId || message.customerId || String(Date.now()),
       value: JSON.stringify({ ...message, timestamp: new Date().toISOString() }),
     }],
   });

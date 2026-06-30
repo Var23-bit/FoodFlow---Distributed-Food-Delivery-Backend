@@ -24,6 +24,9 @@ function createPool(config = {}) {
 }
 
 async function query(text, params) {
+  if (!pool) {
+    throw new Error('PostgreSQL pool not initialized. Call createPool() before query().');
+  }
   const start = Date.now();
   const result = await pool.query(text, params);
   const duration = Date.now() - start;
@@ -34,6 +37,9 @@ async function query(text, params) {
 }
 
 async function getClient() {
+  if (!pool) {
+    throw new Error('PostgreSQL pool not initialized. Call createPool() before getClient().');
+  }
   return pool.connect();
 }
 

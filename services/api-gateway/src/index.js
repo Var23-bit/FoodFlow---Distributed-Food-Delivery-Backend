@@ -196,6 +196,10 @@ async function handleKafkaEvents(topic, message) {
       case KAFKA_TOPICS.PAYMENT_FAILED:
         if (message.userId) emitToUser(message.userId, 'payment_update', message);
         if (message.customerId) emitToUser(message.customerId, 'payment_update', message);
+        // Payment events from the payment service often carry order_id instead of orderId.
+        if (message.orderId || message.order_id) {
+          emitToOrder(message.orderId || message.order_id, 'payment_update', message);
+        }
         break;
       default:
         if (message.customerId || message.userId) {
