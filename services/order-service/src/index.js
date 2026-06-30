@@ -10,6 +10,7 @@ dotenv.config({ path: path.join(__dirname, '../../../.env') });
 const { createPool, connectRedis, createConsumer, KAFKA_TOPICS, errorHandler, notFound } = require('@foodflow/shared');
 const orderRoutes = require('./routes/order.routes');
 const { handleDeliveryEvents } = require('./consumers/delivery.consumer');
+const { handlePaymentEvents } = require('./consumers/payment.consumer');
 
 const app = express();
 const PORT = process.env.ORDER_SERVICE_PORT || 3004;
@@ -39,8 +40,12 @@ async function start() {
   await createConsumer('order-service', [
     KAFKA_TOPICS.DELIVERY_ASSIGNED,
     KAFKA_TOPICS.DELIVERY_STATUS_UPDATED,
-    KAFKA_TOPICS.ORDER_CONFIRMED,
   ], handleDeliveryEvents);
+  
+  await createConsumer('order-service-payment', [
+    KAFKA_TOPICS.PAYMENT_SUCCESSFUL,
+    KAFKA_TOPICS.PAYMENT_FAILED,
+  ], handlePaymentEvents);
   app.listen(PORT, () => console.log(`Order Service running on port ${PORT}`));
 }
 

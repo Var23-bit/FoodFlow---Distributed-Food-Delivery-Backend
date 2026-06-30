@@ -55,10 +55,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
       interval: 10s
-      timeout: 10s
-      retries: 5
+      timeout: 20s
+      retries: 12
+      start_period: 60s
 
   auth-service:
     build:
@@ -192,6 +193,45 @@ services:
     ports:
       - "3006:3006"
 
+  cart-service:
+    build:
+      context: .
+      dockerfile: services/cart-service/Dockerfile
+    container_name: foodflow-cart
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: foodflow-jwt-secret-key-2024
+      CART_SERVICE_PORT: 3007
+    ports:
+      - "3007:3007"
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: foodflow-payment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: foodflow
+      POSTGRES_PASSWORD: foodflow_secret
+      POSTGRES_DB: foodflow
+      KAFKA_BROKERS: kafka:9092
+      JWT_SECRET: foodflow-jwt-secret-key-2024
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      PAYMENT_SERVICE_PORT: 3008
+    ports:
+      - "3008:3008"
+
   api-gateway:
     build:
       context: .
@@ -204,6 +244,8 @@ services:
       - order-service
       - delivery-service
       - notification-service
+      - cart-service
+      - payment-service
       - redis
       - kafka
     environment:
@@ -212,6 +254,8 @@ services:
       REDIS_HOST: redis
       KAFKA_BROKERS: kafka:9092
       JWT_SECRET: foodflow-jwt-secret-key-2024
+      CART_SERVICE_PORT: 3007
+      PAYMENT_SERVICE_PORT: 3008
       POSTGRES_HOST: postgres
       POSTGRES_USER: foodflow
       POSTGRES_PASSWORD: foodflow_secret

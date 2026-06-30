@@ -44,7 +44,18 @@ app.use(errorHandler);
 async function start() {
   createPool();
   await connectRedis();
-  await createConsumer('notification-service', Object.values(KAFKA_TOPICS), handleEvents);
+  await createConsumer('notification-service', [
+    KAFKA_TOPICS.ORDER_CREATED,
+    KAFKA_TOPICS.ORDER_CONFIRMED,
+    KAFKA_TOPICS.DELIVERY_ASSIGNED,
+    KAFKA_TOPICS.ORDER_DELIVERED,
+    KAFKA_TOPICS.PAYMENT_SUCCESSFUL,
+    KAFKA_TOPICS.PAYMENT_FAILED,
+    KAFKA_TOPICS.ORDER_CANCELLED,
+    KAFKA_TOPICS.DELIVERY_STATUS_UPDATED,
+    KAFKA_TOPICS.ORDER_PREPARING,
+    KAFKA_TOPICS.ORDER_READY,
+  ], handleEvents);
   app.listen(PORT, () => console.log(`Notification Service running on port ${PORT}`));
 }
 

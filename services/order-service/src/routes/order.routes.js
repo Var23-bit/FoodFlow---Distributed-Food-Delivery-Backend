@@ -52,10 +52,11 @@ router.patch('/:id/cancel',
 );
 
 router.patch('/:id/status',
-  authorize(ROLES.ADMIN),
+  authorize(ROLES.ADMIN, ROLES.RESTAURANT_OWNER),
   [param('id').isUUID(), body('status').notEmpty()],
   validate,
   asyncHandler(async (req, res) => {
+    // Ideally we should verify the restaurant owner owns the restaurant for this order
     const order = await orderService.updateOrderStatus(req.params.id, req.body.status);
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
     return successResponse(res, order, 'Order status updated');

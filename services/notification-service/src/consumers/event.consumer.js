@@ -44,6 +44,24 @@ const EVENT_TEMPLATES = {
     message: (m) => `Payment of $${m.amount} for order #${m.orderId?.slice(0, 8)} was successful.`,
     getUserId: (m) => m.customerId,
   },
+  [KAFKA_TOPICS.PAYMENT_SUCCESSFUL]: {
+    title: 'Payment Confirmed',
+    message: (m) => `Payment confirmed for order #${m.orderId?.slice(0, 8)}.`,
+    getUserId: (m) => m.userId || m.customerId,
+  },
+  [KAFKA_TOPICS.PAYMENT_FAILED]: {
+    title: 'Payment Failed',
+    message: (m) => `Payment failed for order #${m.orderId?.slice(0, 8)}.`,
+    getUserId: (m) => m.userId || m.customerId,
+  },
+  [KAFKA_TOPICS.DELIVERY_STATUS_UPDATED]: {
+    title: 'Delivery Status Updated',
+    message: (m) => `Delivery status updated to ${m.status} for order #${m.orderId?.slice(0, 8)}.`,
+    getUserId: async (m) => {
+      const result = await query('SELECT customer_id FROM orders WHERE id = $1', [m.orderId]);
+      return result.rows[0]?.customer_id;
+    },
+  },
   [KAFKA_TOPICS.ORDER_CANCELLED]: {
     title: 'Order Cancelled',
     message: (m) => `Your order #${m.orderId?.slice(0, 8)} has been cancelled.`,

@@ -40,6 +40,8 @@ module.exports = {
     DELIVERY_STATUS_UPDATED: 'delivery_status_updated',
     DELIVERY_LOCATION_UPDATED: 'delivery_location_updated',
     PAYMENT_COMPLETED: 'payment_completed',
+    PAYMENT_SUCCESSFUL: 'payment_successful',
+    PAYMENT_FAILED: 'payment_failed',
     USER_REGISTERED: 'user_registered',
     PASSWORD_RESET: 'password_reset',
   },

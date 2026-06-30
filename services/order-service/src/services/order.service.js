@@ -138,7 +138,17 @@ async function updateOrderStatus(orderId, status, deliveryPartnerId = null) {
 
   queryText += ' WHERE id = $2 RETURNING *';
   const result = await query(queryText, params);
-  return result.rows[0];
+  const order = result.rows[0];
+
+  if (order) {
+    if (status === ORDER_STATUS.PREPARING) {
+      await publishEvent(KAFKA_TOPICS.ORDER_PREPARING, { orderId: order.id, customerId: order.customer_id });
+    } else if (status === ORDER_STATUS.READY_FOR_PICKUP) {
+      await publishEvent(KAFKA_TOPICS.ORDER_READY, { orderId: order.id, customerId: order.customer_id, restaurantId: order.restaurant_id });
+    }
+  }
+
+  return order;
 }
 
 async function getOrdersByCustomer(customerId, page = 1, limit = 20) {
@@ -150,10 +160,19 @@ async function getOrdersByCustomer(customerId, page = 1, limit = 20) {
   return result.rows;
 }
 
+async function assignDeliveryPartner(orderId, deliveryPartnerId) {
+  const result = await query(
+    'UPDATE orders SET delivery_partner_id = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+    [deliveryPartnerId, orderId]
+  );
+  return result.rows[0];
+}
+
 module.exports = {
   placeOrder,
   getOrderById,
   cancelOrder,
   updateOrderStatus,
   getOrdersByCustomer,
+  assignDeliveryPartner,
 };

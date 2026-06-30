@@ -12,6 +12,45 @@ async function saveCart(userId, cart) {
 
 async function addItem(userId, item) {
   const cart = await getCart(userId);
+  const hasDifferentRestaurant = cart.items.some((i) => i.restaurantId !== item.restaurantId);
+
+  if (hasDifferentRestaurant) {
+    throw Object.assign(new Error('Cart can contain items from one restaurant only'), { status: 400 });
+  }
+
+  // Validate item against restaurant menu cache
+  const menuStr = await cacheGet(REDIS_KEYS.RESTAURANT_MENU(item.restaurantId));
+  let menuItem;
+  
+  if (menuStr) {
+    const menu = typeof menuStr === 'string' ? JSON.parse(menuStr) : menuStr;
+    menuItem = menu.find(m => m.id === item.menuItemId);
+  } else {
+    // Fallback to calling restaurant service API (using native fetch in Node 18)
+    try {
+      const host = process.env.NODE_ENV === 'production' ? 'restaurant-service' : 'localhost';
+      const port = process.env.RESTAURANT_SERVICE_PORT || 3003;
+      const response = await fetch(`http://${host}:${port}/menu/restaurant/${item.restaurantId}`);
+      if (response.ok) {
+        const menu = await response.json();
+        menuItem = menu.data.find(m => m.id === item.menuItemId);
+      }
+    } catch (e) {
+      console.error('Error fetching menu from restaurant service', e);
+    }
+  }
+
+  if (!menuItem) {
+    throw Object.assign(new Error('Menu item not found'), { status: 404 });
+  }
+
+  if (!menuItem.availability) {
+    throw Object.assign(new Error('Menu item is currently unavailable'), { status: 400 });
+  }
+
+  // Use the validated price
+  const validatedPrice = Number(menuItem.price);
+
   const existing = cart.items.find((i) => i.menuItemId === item.menuItemId);
 
   if (existing) {
@@ -21,8 +60,8 @@ async function addItem(userId, item) {
       id: item.menuItemId,
       menuItemId: item.menuItemId,
       restaurantId: item.restaurantId,
-      name: item.name,
-      price: item.price,
+      name: menuItem.name || item.name,
+      price: validatedPrice,
       quantity: item.quantity,
     });
   }
